@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目汇总 - 工程项目收支管理系统</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --primary-light: #63a4ff;
+            --primary-dark: #004ba0;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --white: #fff;
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --hover-bg: #e3f2fd;
+            --table-header: #009688;
+            --table-alt-row: #f9f9f9;
+            --income-color: #4CAF50;
+            --expense-color: #F44336;
+            --profit-color: #2196F3;
+            --negative-amount: #e53935;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f7;
+            color: var(--text-color);
+        }
+        
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* 侧边导航 */
+        .sidebar {
+            width: 240px;
+            background-color: var(--white);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+        
+        .logo {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        
+        .nav-section {
+            margin: 10px 0;
+        }
+        
+        .nav-section-title {
+            padding: 10px 20px;
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .nav-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .nav-item:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-item.active {
+            background-color: var(--hover-bg);
+            color: var(--primary-color);
+            font-weight: 500;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: var(--table-header);
+            color: var(--white);
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 500;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .page-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .back-button {
+            background-color: var(--table-header);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+        
+        .back-button i {
+            margin-right: 5px;
+        }
+        
+        .back-button:hover {
+            background-color: #00796b;
+        }
+        
+        /* 筛选选项 */
+        .filter-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            background-color: #f5f5f7;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-item label {
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .filter-item select, .filter-item input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .filter-button {
+            background-color: var(--table-header);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .filter-button i {
+            margin-right: 5px;
+        }
+        
+        .filter-button:hover {
+            background-color: #00796b;
+        }
+        
+        /* 表格样式 */
+        .finance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .finance-table th {
+            background-color: var(--table-header);
+            color: white;
+            text-align: center;
+            padding: 12px 15px;
+            font-weight: 500;
+            border: 1px solid #ddd;
+        }
+        
+        .finance-table td {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .finance-table tr:nth-child(even) {
+            background-color: var(--table-alt-row);
+        }
+        
+        .finance-table tr:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .finance-table td.amount {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+            font-weight: 500;
+        }
+        
+        .finance-table td.income {
+            color: var(--income-color);
+        }
+        
+        .finance-table td.expense {
+            color: var(--expense-color);
+        }
+        
+        .finance-table td.profit {
+            color: var(--profit-color);
+            font-weight: bold;
+        }
+        
+        .finance-table td.negative {
+            color: var(--negative-amount);
+        }
+        
+        .finance-table .total-row {
+            background-color: #e0f2f1;
+            font-weight: bold;
+        }
+        
+        /* 项目卡片样式 */
+        .project-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .project-card {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .project-card-header {
+            background-color: var(--table-header);
+            color: white;
+            padding: 15px;
+            font-weight: 500;
+        }
+        
+        .project-card-body {
+            padding: 15px;
+        }
+        
+        .project-card-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .project-card-item:last-child {
+            margin-bottom: 0;
+            padding-top: 10px;
+            border-top: 1px dashed #eee;
+            font-weight: bold;
+        }
+        
+        .project-card-label {
+            color: #666;
+        }
+        
+        .project-card-value {
+            font-weight: 500;
+        }
+        
+        .project-card-value.income {
+            color: var(--income-color);
+        }
+        
+        .project-card-value.expense {
+            color: var(--expense-color);
+        }
+        
+        .project-card-value.profit {
+            color: var(--profit-color);
+        }
+        
+        .project-card-value.negative {
+            color: var(--negative-amount);
+        }
+        
+        /* 总结信息 */
+        .summary-section {
+            background-color: #f5f5f7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .summary-title {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .summary-card {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .summary-card-title {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        
+        .summary-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .income-card .summary-value {
+            color: var(--income-color);
+        }
+        
+        .expense-card .summary-value {
+            color: var(--expense-color);
+        }
+        
+        .profit-card .summary-value {
+            color: var(--profit-color);
+        }
+        
+        /* 进度条样式 */
+        .progress-bars {
+            margin-top: 20px;
+        }
+        
+        .progress-item {
+            margin-bottom: 15px;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .progress-title {
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .progress-value {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .progress-fill.income {
+            background-color: var(--income-color);
+        }
+        
+        .progress-fill.expense {
+            background-color: var(--expense-color);
+        }
+        
+        .progress-fill.profit {
+            background-color: var(--profit-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边导航 -->
+        <div class="sidebar">
+            <div class="logo">
+                <i class="material-icons">account_balance</i>
+                <span>财务管理系统</span>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">系统功能</div>
+                <a href="index.html" class="nav-item">
+                    <i class="material-icons">dashboard</i>
+                    <span>功能总览</span>
+                </a>
+                <a href="basic-info.html" class="nav-item">
+                    <i class="material-icons">info</i>
+                    <span>基础信息</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">数据管理</div>
+                <a href="income-expense-register.html" class="nav-item">
+                    <i class="material-icons">book</i>
+                    <span>收支登记</span>
+                </a>
+                <a href="internal-transfer.html" class="nav-item">
+                    <i class="material-icons">swap_horiz</i>
+                    <span>内部转账</span>
+                </a>
+                <a href="accounts-receivable.html" class="nav-item">
+                    <i class="material-icons">arrow_downward</i>
+                    <span>应收</span>
+                </a>
+                <a href="accounts-payable.html" class="nav-item">
+                    <i class="material-icons">arrow_upward</i>
+                    <span>应付</span>
+                </a>
+                <a href="employee-loan.html" class="nav-item">
+                    <i class="material-icons">account_balance_wallet</i>
+                    <span>员工借款</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">票据管理</div>
+                <a href="purchase-contract.html" class="nav-item">
+                    <i class="material-icons">shopping_cart</i>
+                    <span>采购合同</span>
+                </a>
+                <a href="sales-contract.html" class="nav-item">
+                    <i class="material-icons">store</i>
+                    <span>销售合同</span>
+                </a>
+                <a href="sales-invoice-register.html" class="nav-item">
+                    <i class="material-icons">receipt</i>
+                    <span>销项发票</span>
+                </a>
+                <a href="purchase-invoice-register.html" class="nav-item">
+                    <i class="material-icons">description</i>
+                    <span>进项发票</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">数据报表</div>
+                <a href="project-detail.html" class="nav-item">
+                    <i class="material-icons">business</i>
+                    <span>工程项目明细</span>
+                </a>
+                <a href="period-report.html" class="nav-item">
+                    <i class="material-icons">date_range</i>
+                    <span>任意时段表</span>
+                </a>
+                <a href="account-statistics.html" class="nav-item">
+                    <i class="material-icons">account_balance</i>
+                    <span>账户统计</span>
+                </a>
+                <a href="employee-statistics.html" class="nav-item">
+                    <i class="material-icons">people</i>
+                    <span>员工统计</span>
+                </a>
+                <a href="transaction-report.html" class="nav-item">
+                    <i class="material-icons">compare_arrows</i>
+                    <span>往来报表</span>
+                </a>
+                <a href="attendance.html" class="nav-item">
+                    <i class="material-icons">event</i>
+                    <span>考勤表</span>
+                </a>
+                <a href="income-summary.html" class="nav-item">
+                    <i class="material-icons">trending_up</i>
+                    <span>收入汇总</span>
+                </a>
+                <a href="expense-summary.html" class="nav-item">
+                    <i class="material-icons">trending_down</i>
+                    <span>支出汇总</span>
+                </a>
+                <a href="project-income-expense.html" class="nav-item">
+                    <i class="material-icons">account_balance</i>
+                    <span>项目收支</span>
+                </a>
+                <a href="annual-summary.html" class="nav-item">
+                    <i class="material-icons">date_range</i>
+                    <span>年度汇总</span>
+                </a>
+                <a href="project-summary.html" class="nav-item active">
+                    <i class="material-icons">business</i>
+                    <span>项目汇总</span>
+                </a>
+                <a href="salary-table.html" class="nav-item">
+                    <i class="material-icons">attach_money</i>
+                    <span>工资表</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <div class="header">
+                <h1>项目汇总</h1>
+                <div class="user-info">
+                    <div class="avatar">A</div>
+                    <span>管理员</span>
+                </div>
+            </div>
+            
+            <div class="page-content">
+                <a href="index.html" class="back-button">
+                    <i class="material-icons">home</i>
+                    返回主页
+                </a>
+                
+                <div class="filter-section">
+                    <div class="filter-item">
+                        <label>开始日期:</label>
+                        <input type="date" value="2021-01-01">
+                    </div>
+                    <div class="filter-item">
+                        <label>结束日期:</label>
+                        <input type="date" value="2022-12-31">
+                    </div>
+                    <div class="filter-item">
+                        <label>项目状态:</label>
+                        <select>
+                            <option selected>全部</option>
+                            <option>进行中</option>
+                            <option>已完成</option>
+                            <option>已暂停</option>
+                        </select>
+                    </div>
+                    <button class="filter-button">
+                        <i class="material-icons">search</i>
+                        查询
+                    </button>
+                </div>
+                
+                <div class="summary-section">
+                    <div class="summary-title">项目总体数据</div>
+                    <div class="summary-cards">
+                        <div class="summary-card income-card">
+                            <div class="summary-card-title">总收入</div>
+                            <div class="summary-value">¥597,820.00</div>
+                        </div>
+                        <div class="summary-card expense-card">
+                            <div class="summary-card-title">总支出</div>
+                            <div class="summary-value">¥245,700.00</div>
+                        </div>
+                        <div class="summary-card profit-card">
+                            <div class="summary-card-title">净盈亏</div>
+                            <div class="summary-value">¥352,120.00</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bars">
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <div class="progress-title">完成进度</div>
+                                <div class="progress-value">80%</div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill income" style="width: 80%;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <div class="progress-title">预算使用</div>
+                                <div class="progress-value">65%</div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill expense" style="width: 65%;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <div class="progress-title">盈利率</div>
+                                <div class="progress-value">58.9%</div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill profit" style="width: 58.9%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <table class="finance-table">
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>项目名称</th>
+                            <th>开始日期</th>
+                            <th>状态</th>
+                            <th>收入金额</th>
+                            <th>支出金额</th>
+                            <th>盈亏</th>
+                            <th>盈利率</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>哈尔滨工程</td>
+                            <td>2021-03-15</td>
+                            <td>进行中</td>
+                            <td class="amount income">239,433.00</td>
+                            <td class="amount expense">42,200.00</td>
+                            <td class="amount profit">197,233.00</td>
+                            <td>82.4%</td>
+                            <td><a href="project-income-expense.html" class="filter-button" style="padding: 4px 8px; font-size: 12px;">查看</a></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>北京工程</td>
+                            <td>2021-05-20</td>
+                            <td>已完成</td>
+                            <td class="amount income">156,780.00</td>
+                            <td class="amount expense">89,500.00</td>
+                            <td class="amount profit">67,280.00</td>
+                            <td>42.9%</td>
+                            <td><a href="project-income-expense.html" class="filter-button" style="padding: 4px 8px; font-size: 12px;">查看</a></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>长沙工程</td>
+                            <td>2021-07-10</td>
+                            <td>已完成</td>
+                            <td class="amount income">93,500.00</td>
+                            <td class="amount expense">61,200.00</td>
+                            <td class="amount profit">32,300.00</td>
+                            <td>34.5%</td>
+                            <td><a href="project-income-expense.html" class="filter-button" style="padding: 4px 8px; font-size: 12px;">查看</a></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>长春工程</td>
+                            <td>2022-02-25</td>
+                            <td>进行中</td>
+                            <td class="amount income">108,107.00</td>
+                            <td class="amount expense">52,800.00</td>
+                            <td class="amount profit">55,307.00</td>
+                            <td>51.2%</td>
+                            <td><a href="project-income-expense.html" class="filter-button" style="padding: 4px 8px; font-size: 12px;">查看</a></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="4">合计</td>
+                            <td class="amount income">597,820.00</td>
+                            <td class="amount expense">245,700.00</td>
+                            <td class="amount profit">352,120.00</td>
+                            <td>58.9%</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <div class="project-cards">
+                    <div class="project-card">
+                        <div class="project-card-header">哈尔滨工程</div>
+                        <div class="project-card-body">
+                            <div class="project-card-item">
+                                <span class="project-card-label">开始日期</span>
+                                <span class="project-card-value">2021-03-15</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">状态</span>
+                                <span class="project-card-value">进行中</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">收入</span>
+                                <span class="project-card-value income">¥239,433.00</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">支出</span>
+                                <span class="project-card-value expense">¥42,200.00</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">盈亏</span>
+                                <span class="project-card-value profit">¥197,233.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card">
+                        <div class="project-card-header">北京工程</div>
+                        <div class="project-card-body">
+                            <div class="project-card-item">
+                                <span class="project-card-label">开始日期</span>
+                                <span class="project-card-value">2021-05-20</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">状态</span>
+                                <span class="project-card-value">已完成</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">收入</span>
+                                <span class="project-card-value income">¥156,780.00</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">支出</span>
+                                <span class="project-card-value expense">¥89,500.00</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">盈亏</span>
+                                <span class="project-card-value profit">¥67,280.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card">
+                        <div class="project-card-header">长沙工程</div>
+                        <div class="project-card-body">
+                            <div class="project-card-item">
+                                <span class="project-card-label">开始日期</span>
+                                <span class="project-card-value">2021-07-10</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">状态</span>
+                                <span class="project-card-value">已完成</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">收入</span>
+                                <span class="project-card-value income">¥93,500.00</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">支出</span>
+                                <span class="project-card-value expense">¥61,200.00</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">盈亏</span>
+                                <span class="project-card-value profit">¥32,300.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card">
+                        <div class="project-card-header">长春工程</div>
+                        <div class="project-card-body">
+                            <div class="project-card-item">
+                                <span class="project-card-label">开始日期</span>
+                                <span class="project-card-value">2022-02-25</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">状态</span>
+                                <span class="project-card-value">进行中</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">收入</span>
+                                <span class="project-card-value income">¥108,107.00</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">支出</span>
+                                <span class="project-card-value expense">¥52,800.00</span>
+                            </div>
+                            <div class="project-card-item">
+                                <span class="project-card-label">盈亏</span>
+                                <span class="project-card-value profit">¥55,307.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

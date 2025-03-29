@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工资管理 - 工程项目收支管理系统</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --primary-light: #63a4ff;
+            --primary-dark: #004ba0;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --white: #fff;
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --hover-bg: #e3f2fd;
+            --table-header: #45b7e5;
+            --table-alt-row: #f9f9f9;
+            --danger-color: #f44336;
+            --success-color: #4CAF50;
+            --salary-color: #66bb6a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f7;
+            color: var(--text-color);
+        }
+        
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* 侧边导航 */
+        .sidebar {
+            width: 240px;
+            background-color: var(--white);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            z-index: 100;
+            overflow-y: auto;
+        }
+        
+        .logo {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        
+        .nav-section {
+            margin: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .nav-section-title {
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            background-color: #f9f9f9;
+        }
+        
+        .nav-section-title:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-section-title .toggle-icon {
+            transition: transform 0.3s;
+        }
+        
+        .nav-section-title.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        
+        .nav-items {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        .nav-items.collapsed {
+            max-height: 0;
+        }
+        
+        .nav-item {
+            padding: 10px 20px 10px 35px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            color: inherit;
+            font-size: 13px;
+        }
+        
+        .nav-item:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-item.active {
+            background-color: var(--hover-bg);
+            color: var(--primary-color);
+            font-weight: 500;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: var(--salary-color);
+            color: var(--white);
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 500;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .page-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .page-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--salary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .action-button {
+            background-color: var(--salary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .action-button i {
+            margin-right: 5px;
+        }
+        
+        .action-button:hover {
+            background-color: #43a047;
+        }
+        
+        /* 表格样式 */
+        .finance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .finance-table th {
+            background-color: var(--salary-color);
+            color: white;
+            text-align: center;
+            padding: 12px 15px;
+            font-weight: 500;
+            border: 1px solid #ddd;
+        }
+        
+        .finance-table td {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .finance-table tr:nth-child(even) {
+            background-color: var(--table-alt-row);
+        }
+        
+        .finance-table tr:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .date-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #e8f5e9;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        
+        /* 返回主页按钮 */
+        .back-button {
+            background-color: var(--salary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        
+        .back-button i {
+            margin-right: 5px;
+        }
+        
+        .back-button:hover {
+            background-color: #43a047;
+        }
+        
+        .search-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .search-bar input,
+        .search-bar select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .search-bar label {
+            margin-right: 5px;
+            font-size: 14px;
+        }
+        
+        .warning-box {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #2e7d32;
+        }
+        
+        .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+        
+        .stat-card {
+            flex: 1;
+            min-width: 200px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-title {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--salary-color);
+        }
+        
+        .total-row {
+            background-color: #e8f5e9 !important;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+            }
+            
+            .nav-item span, .nav-section-title span, .logo span {
+                display: none;
+            }
+            
+            .logo {
+                padding: 15px 0;
+            }
+            
+            .nav-item {
+                justify-content: center;
+                padding: 12px 0;
+            }
+            
+            .nav-item i {
+                margin-right: 0;
+            }
+            
+            .nav-section-title {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边导航 -->
+        <div id="sidebar" class="sidebar">
+            <!-- 导航内容将通过JS动态加载 -->
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <div class="header">
+                <h1>工资管理</h1>
+                <div class="user-info">
+                    <div class="avatar">A</div>
+                    <span>管理员</span>
+                </div>
+            </div>
+            
+            <div class="page-content">
+                <div class="date-header">
+                    <div>当前日期：2022/1/1</div>
+                    <a href="index.html" class="back-button">
+                        <i class="material-icons">home</i>
+                        返回主页
+                    </a>
+                </div>
+                
+                <div class="warning-box">
+                    <p>员工工资每月25日前核算完毕，28日发放。请确保所有加班、扣款信息在20日前录入系统。</p>
+                </div>
+                
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-title">本月工资总额</div>
+                        <div class="stat-value">¥86,500</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">员工总数</div>
+                        <div class="stat-value">15</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">平均工资</div>
+                        <div class="stat-value">¥5,767</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">本月加班费</div>
+                        <div class="stat-value">¥6,300</div>
+                    </div>
+                </div>
+                
+                <div class="search-bar">
+                    <label>部门：</label>
+                    <select>
+                        <option value="">全部</option>
+                        <option value="工程部">工程部</option>
+                        <option value="财务部">财务部</option>
+                        <option value="行政部">行政部</option>
+                    </select>
+                    
+                    <label>月份：</label>
+                    <select>
+                        <option value="202201">2022年1月</option>
+                        <option value="202112">2021年12月</option>
+                        <option value="202111">2021年11月</option>
+                    </select>
+                    
+                    <button class="action-button">
+                        <i class="material-icons">search</i>
+                        查询
+                    </button>
+                </div>
+                
+                <div class="page-title">
+                    <span>员工工资明细（2022年1月）</span>
+                    <button class="action-button">
+                        <i class="material-icons">add</i>
+                        新增员工
+                    </button>
+                </div>
+                
+                <table class="finance-table">
+                    <tr>
+                        <th>序号</th>
+                        <th>姓名</th>
+                        <th>部门</th>
+                        <th>职位</th>
+                        <th>基本工资</th>
+                        <th>绩效工资</th>
+                        <th>加班费</th>
+                        <th>社保补贴</th>
+                        <th>交通补贴</th>
+                        <th>餐饮补贴</th>
+                        <th>个人所得税</th>
+                        <th>社保扣款</th>
+                        <th>公积金</th>
+                        <th>请假扣款</th>
+                        <th>实发工资</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>员工01</td>
+                        <td>工程部</td>
+                        <td>项目经理</td>
+                        <td>8000</td>
+                        <td>2000</td>
+                        <td>800</td>
+                        <td>400</td>
+                        <td>300</td>
+                        <td>400</td>
+                        <td>-320</td>
+                        <td>-960</td>
+                        <td>-800</td>
+                        <td>0</td>
+                        <td>9820</td>
+                        <td>已发放</td>
+                        <td>
+                            <a href="#" class="action-link">详情</a>
+                            <a href="#" class="action-link">编辑</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>员工02</td>
+                        <td>财务部</td>
+                        <td>财务主管</td>
+                        <td>7000</td>
+                        <td>1500</td>
+                        <td>500</td>
+                        <td>400</td>
+                        <td>300</td>
+                        <td>400</td>
+                        <td>-250</td>
+                        <td>-840</td>
+                        <td>-700</td>
+                        <td>-350</td>
+                        <td>7960</td>
+                        <td>已发放</td>
+                        <td>
+                            <a href="#" class="action-link">详情</a>
+                            <a href="#" class="action-link">编辑</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>员工03</td>
+                        <td>工程部</td>
+                        <td>施工员</td>
+                        <td>5000</td>
+                        <td>1000</td>
+                        <td>1200</td>
+                        <td>300</td>
+                        <td>200</td>
+                        <td>300</td>
+                        <td>-120</td>
+                        <td>-600</td>
+                        <td>-500</td>
+                        <td>0</td>
+                        <td>6780</td>
+                        <td>已发放</td>
+                        <td>
+                            <a href="#" class="action-link">详情</a>
+                            <a href="#" class="action-link">编辑</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>员工04</td>
+                        <td>行政部</td>
+                        <td>人事专员</td>
+                        <td>5500</td>
+                        <td>800</td>
+                        <td>0</td>
+                        <td>300</td>
+                        <td>200</td>
+                        <td>300</td>
+                        <td>-100</td>
+                        <td>-660</td>
+                        <td>-550</td>
+                        <td>0</td>
+                        <td>5790</td>
+                        <td>已发放</td>
+                        <td>
+                            <a href="#" class="action-link">详情</a>
+                            <a href="#" class="action-link">编辑</a>
+                        </td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4">合计</td>
+                        <td>25500</td>
+                        <td>5300</td>
+                        <td>2500</td>
+                        <td>1400</td>
+                        <td>1000</td>
+                        <td>1400</td>
+                        <td>-790</td>
+                        <td>-3060</td>
+                        <td>-2550</td>
+                        <td>-350</td>
+                        <td>30350</td>
+                        <td colspan="2"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航组件脚本 -->
+    <script src="js/sidebar.js"></script>
+    <script>
+        // 初始化侧边导航
+        document.addEventListener('DOMContentLoaded', function() {
+            // 当前页面路径，用于高亮显示当前页面对应的导航项
+            initSidebar();
+        });
+    </script>
+</body>
+</html> 

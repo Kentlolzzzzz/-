@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成本核算明细表 - 工程项目收支管理系统</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --primary-light: #63a4ff;
+            --primary-dark: #004ba0;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --white: #fff;
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --hover-bg: #e3f2fd;
+            --table-header: #f44336;
+            --table-alt-row: #f9f9f9;
+            --danger-color: #f44336;
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --chart-color-1: #F44336;
+            --chart-color-2: #FF9800;
+            --chart-color-3: #9C27B0;
+            --chart-color-4: #607D8B;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f7;
+            color: var(--text-color);
+        }
+        
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* 侧边导航 */
+        .sidebar {
+            width: 240px;
+            background-color: var(--white);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            z-index: 100;
+            overflow-y: auto;
+        }
+        
+        .logo {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        
+        .nav-section {
+            margin: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .nav-section-title {
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            background-color: #f9f9f9;
+        }
+        
+        .nav-section-title:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-section-title .toggle-icon {
+            transition: transform 0.3s;
+        }
+        
+        .nav-section-title.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        
+        .nav-items {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        .nav-items.collapsed {
+            max-height: 0;
+        }
+        
+        .nav-item {
+            padding: 10px 20px 10px 35px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            color: inherit;
+            font-size: 13px;
+        }
+        
+        .nav-item:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-item.active {
+            background-color: var(--hover-bg);
+            color: var(--primary-color);
+            font-weight: 500;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: var(--danger-color);
+            color: var(--white);
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 500;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .page-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--danger-color);
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .date-line {
+            display: flex;
+            justify-content: flex-end;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            height: 300px;
+        }
+        
+        .chart-bar {
+            width: 40px;
+            margin: 0 15px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .bar {
+            width: 100%;
+            background-color: var(--chart-color-1);
+            border-radius: 4px 4px 0 0;
+            position: absolute;
+            bottom: 30px;
+        }
+        
+        .bar-label {
+            position: absolute;
+            bottom: 10px;
+            text-align: center;
+            font-size: 12px;
+            width: 100%;
+        }
+        
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            text-align: center;
+            font-size: 12px;
+            width: 100%;
+            color: #666;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #555;
+        }
+        
+        /* 表格样式 */
+        .finance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .finance-table th {
+            background-color: var(--table-header);
+            color: white;
+            text-align: center;
+            padding: 12px 15px;
+            font-weight: 500;
+            border: 1px solid #ddd;
+        }
+        
+        .finance-table td {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .finance-table tr:nth-child(even) {
+            background-color: var(--table-alt-row);
+        }
+        
+        .finance-table tr:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .expense-row {
+            background-color: #ffebee;
+        }
+        
+        .amount-cell {
+            text-align: right;
+            font-family: monospace;
+            font-weight: 500;
+        }
+        
+        .positive {
+            color: var(--success-color);
+        }
+        
+        .negative {
+            color: var(--danger-color);
+        }
+        
+        .info-box {
+            display: flex;
+            flex-wrap: wrap;
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            flex: 1;
+            min-width: 250px;
+            margin: 5px;
+            display: flex;
+            align-items: center;
+            line-height: 2;
+        }
+        
+        .info-label {
+            color: #666;
+            margin-right: 10px;
+            position: relative;
+        }
+        
+        .info-label::after {
+            content: '>>';
+            margin-left: 8px;
+            color: #aaa;
+        }
+        
+        .info-value {
+            font-weight: 500;
+        }
+        
+        .info-value.highlight {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        
+        .warning-text {
+            color: var(--warning-color);
+            border: 1px dashed var(--warning-color);
+            padding: 10px;
+            margin: 10px 0;
+            display: inline-block;
+            border-radius: 4px;
+        }
+        
+        /* 返回主页按钮 */
+        .back-button {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+        
+        .back-button i {
+            margin-right: 5px;
+        }
+        
+        .back-button:hover {
+            background-color: #d32f2f;
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边导航 -->
+        <div class="sidebar" id="sidebar">
+            <!-- 通过sidebar.js脚本动态生成 -->
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <div class="header">
+                <h1>成本核算明细表</h1>
+                <div class="user-info">
+                    <div class="avatar">A</div>
+                    <span>管理员</span>
+                </div>
+            </div>
+            
+            <div class="page-content">
+                <div class="stat-header">
+                    <div class="page-title">成本核算明细表</div>
+                    <a href="index.html" class="back-button">
+                        <i class="material-icons">home</i>
+                        返回主页
+                    </a>
+                    <div class="date-line">2025年03月16日 星期日</div>
+                </div>
+                
+                <div class="info-box">
+                    <div class="info-item">
+                        <div class="info-label">查询开始日期</div>
+                        <div class="info-value">2022/01/01</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">查询结束日期</div>
+                        <div class="info-value">2022/12/31</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">查询所属项目</div>
+                        <div class="info-value">哈尔滨工程</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">查询成本金额</div>
+                        <div class="info-value highlight">67,990.00</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">按照年度查询</div>
+                        <div class="info-value">2022</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="warning-text">
+                            下拉选择工程<br>
+                            若无统计所有项目
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-title">查询年度各月份成本支出金额</div>
+                <div class="chart-container">
+                    <div class="chart-bar">
+                        <div class="bar" style="height: 35px;"></div>
+                        <div class="bar-value">17,100.0</div>
+                        <div class="bar-label">1月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar" style="height: 26px; background-color: var(--chart-color-2);"></div>
+                        <div class="bar-value">13,000.0</div>
+                        <div class="bar-label">2月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar" style="height: 28px; background-color: var(--chart-color-3);"></div>
+                        <div class="bar-value">14,000.0</div>
+                        <div class="bar-label">3月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar" style="height: 0;"></div>
+                        <div class="bar-value">0.0</div>
+                        <div class="bar-label">4月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar" style="height: 0; background-color: var(--chart-color-4);"></div>
+                        <div class="bar-value">0.0</div>
+                        <div class="bar-label">5月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar" style="height: 36px;"></div>
+                        <div class="bar-value">18,000.0</div>
+                        <div class="bar-label">6月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar" style="height: 3px; background-color: var(--chart-color-1);"></div>
+                        <div class="bar-value">1,500.0</div>
+                        <div class="bar-label">7月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar" style="height: 0;"></div>
+                        <div class="bar-value">0.0</div>
+                        <div class="bar-label">8月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar" style="height: 0;"></div>
+                        <div class="bar-value">0.0</div>
+                        <div class="bar-label">9月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar" style="height: 0;"></div>
+                        <div class="bar-value">0.0</div>
+                        <div class="bar-label">10月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar" style="height: 4px; background-color: var(--chart-color-2);"></div>
+                        <div class="bar-value">1,890.0</div>
+                        <div class="bar-label">11月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar" style="height: 5px;"></div>
+                        <div class="bar-value">2,500.0</div>
+                        <div class="bar-label">12月</div>
+                    </div>
+                </div>
+                
+                <table class="finance-table">
+                    <tr>
+                        <th>日期</th>
+                        <th>项目名称</th>
+                        <th>成本类型</th>
+                        <th>业务摘要</th>
+                        <th>金额</th>
+                        <th>负责人</th>
+                        <th>备注</th>
+                    </tr>
+                    <tr>
+                        <td>2022/01/03</td>
+                        <td>哈尔滨工程</td>
+                        <td>工资</td>
+                        <td>员工工资</td>
+                        <td class="amount-cell negative">3,000.00</td>
+                        <td>员工01</td>
+                        <td>备注2</td>
+                    </tr>
+                    <tr>
+                        <td>2022/01/10</td>
+                        <td>哈尔滨工程</td>
+                        <td>材料费</td>
+                        <td>购买材料</td>
+                        <td class="amount-cell negative">12,000.00</td>
+                        <td>员工01</td>
+                        <td>备注5</td>
+                    </tr>
+                    <tr>
+                        <td>2022/01/15</td>
+                        <td>哈尔滨工程</td>
+                        <td>交通费</td>
+                        <td>差旅费用</td>
+                        <td class="amount-cell negative">2,100.00</td>
+                        <td>员工01</td>
+                        <td>备注7</td>
+                    </tr>
+                    <tr>
+                        <td>2022/02/05</td>
+                        <td>哈尔滨工程</td>
+                        <td>工资</td>
+                        <td>员工工资</td>
+                        <td class="amount-cell negative">3,000.00</td>
+                        <td>员工01</td>
+                        <td>备注15</td>
+                    </tr>
+                    <tr>
+                        <td>2022/02/16</td>
+                        <td>哈尔滨工程</td>
+                        <td>材料费</td>
+                        <td>购买材料</td>
+                        <td class="amount-cell negative">10,000.00</td>
+                        <td>员工01</td>
+                        <td>备注17</td>
+                    </tr>
+                    <tr>
+                        <td>2022/03/04</td>
+                        <td>哈尔滨工程</td>
+                        <td>工资</td>
+                        <td>员工工资</td>
+                        <td class="amount-cell negative">3,000.00</td>
+                        <td>员工02</td>
+                        <td>备注25</td>
+                    </tr>
+                    <tr>
+                        <td>2022/03/23</td>
+                        <td>哈尔滨工程</td>
+                        <td>材料费</td>
+                        <td>购买材料</td>
+                        <td class="amount-cell negative">11,000.00</td>
+                        <td>员工02</td>
+                        <td>备注29</td>
+                    </tr>
+                    <tr>
+                        <td>2022/06/08</td>
+                        <td>哈尔滨工程</td>
+                        <td>工资</td>
+                        <td>员工工资</td>
+                        <td class="amount-cell negative">3,000.00</td>
+                        <td>员工02</td>
+                        <td>备注35</td>
+                    </tr>
+                    <tr>
+                        <td>2022/06/15</td>
+                        <td>哈尔滨工程</td>
+                        <td>施工费</td>
+                        <td>分包工程款</td>
+                        <td class="amount-cell negative">15,000.00</td>
+                        <td>员工02</td>
+                        <td>备注38</td>
+                    </tr>
+                    <tr>
+                        <td>2022/07/03</td>
+                        <td>哈尔滨工程</td>
+                        <td>工资</td>
+                        <td>员工工资</td>
+                        <td class="amount-cell negative">1,500.00</td>
+                        <td>员工02</td>
+                        <td>备注40</td>
+                    </tr>
+                    <tr>
+                        <td>2022/11/12</td>
+                        <td>哈尔滨工程</td>
+                        <td>杂费</td>
+                        <td>项目杂费</td>
+                        <td class="amount-cell negative">1,890.00</td>
+                        <td>员工03</td>
+                        <td>备注44</td>
+                    </tr>
+                    <tr>
+                        <td>2022/12/20</td>
+                        <td>哈尔滨工程</td>
+                        <td>交通费</td>
+                        <td>结算交通费</td>
+                        <td class="amount-cell negative">2,500.00</td>
+                        <td>员工03</td>
+                        <td>备注50</td>
+                    </tr>
+                </table>
+                
+                <table class="finance-table" style="margin-top: 40px;">
+                    <tr>
+                        <th>成本类型</th>
+                        <th>成本金额</th>
+                        <th>占比</th>
+                    </tr>
+                    <tr>
+                        <td>工资</td>
+                        <td class="amount-cell">13,500.00</td>
+                        <td>19.9%</td>
+                    </tr>
+                    <tr>
+                        <td>材料费</td>
+                        <td class="amount-cell">33,000.00</td>
+                        <td>48.5%</td>
+                    </tr>
+                    <tr>
+                        <td>交通费</td>
+                        <td class="amount-cell">4,600.00</td>
+                        <td>6.8%</td>
+                    </tr>
+                    <tr>
+                        <td>施工费</td>
+                        <td class="amount-cell">15,000.00</td>
+                        <td>22.1%</td>
+                    </tr>
+                    <tr>
+                        <td>杂费</td>
+                        <td class="amount-cell">1,890.00</td>
+                        <td>2.8%</td>
+                    </tr>
+                    <tr style="font-weight: bold;">
+                        <td>合计</td>
+                        <td class="amount-cell">67,990.00</td>
+                        <td>100.0%</td>
+                    </tr>
+                </table>
+                
+                <table class="finance-table" style="margin-top: 40px;">
+                    <tr>
+                        <th>月份</th>
+                        <th>成本金额</th>
+                        <th>占比</th>
+                    </tr>
+                    <tr>
+                        <td>1月</td>
+                        <td class="amount-cell">17,100.00</td>
+                        <td>25.2%</td>
+                    </tr>
+                    <tr>
+                        <td>2月</td>
+                        <td class="amount-cell">13,000.00</td>
+                        <td>19.1%</td>
+                    </tr>
+                    <tr>
+                        <td>3月</td>
+                        <td class="amount-cell">14,000.00</td>
+                        <td>20.6%</td>
+                    </tr>
+                    <tr>
+                        <td>4月</td>
+                        <td class="amount-cell">-</td>
+                        <td>0.0%</td>
+                    </tr>
+                    <tr>
+                        <td>5月</td>
+                        <td class="amount-cell">-</td>
+                        <td>0.0%</td>
+                    </tr>
+                    <tr style="background-color: #ffebee;">
+                        <td>6月</td>
+                        <td class="amount-cell">18,000.00</td>
+                        <td>26.5%</td>
+                    </tr>
+                    <tr>
+                        <td>7月</td>
+                        <td class="amount-cell">1,500.00</td>
+                        <td>2.2%</td>
+                    </tr>
+                    <tr>
+                        <td>8月</td>
+                        <td class="amount-cell">-</td>
+                        <td>0.0%</td>
+                    </tr>
+                    <tr>
+                        <td>9月</td>
+                        <td class="amount-cell">-</td>
+                        <td>0.0%</td>
+                    </tr>
+                    <tr>
+                        <td>10月</td>
+                        <td class="amount-cell">-</td>
+                        <td>0.0%</td>
+                    </tr>
+                    <tr>
+                        <td>11月</td>
+                        <td class="amount-cell">1,890.00</td>
+                        <td>2.8%</td>
+                    </tr>
+                    <tr>
+                        <td>12月</td>
+                        <td class="amount-cell">2,500.00</td>
+                        <td>3.7%</td>
+                    </tr>
+                    <tr style="font-weight: bold;">
+                        <td>合计</td>
+                        <td class="amount-cell">67,990.00</td>
+                        <td>100.0%</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航组件脚本 -->
+    <script src="js/sidebar.js"></script>
+    <script>
+        // 初始化侧边导航
+        document.addEventListener('DOMContentLoaded', function() {
+            initSidebar();
+        });
+    </script>
+</body>
+</html> 

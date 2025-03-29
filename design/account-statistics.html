@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>账户统计表 - 工程项目收支管理系统</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --primary-light: #63a4ff;
+            --primary-dark: #004ba0;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --white: #fff;
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --hover-bg: #e3f2fd;
+            --table-header: #4db6ac;
+            --table-alt-row: #f9f9f9;
+            --income-color: #4CAF50;
+            --expense-color: #F44336;
+            --border-color: #e0e0e0;
+            --internal-transfer-in: #2196F3;
+            --internal-transfer-out: #FF9800;
+            --negative-amount: #d32f2f;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f7;
+            color: var(--text-color);
+        }
+        
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* 侧边导航 */
+        .sidebar {
+            width: 240px;
+            background-color: var(--white);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            z-index: 100;
+            overflow-y: auto;
+        }
+        
+        .logo {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        
+        .nav-section {
+            margin: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .nav-section-title {
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            background-color: #f9f9f9;
+        }
+        
+        .nav-section-title:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-section-title .toggle-icon {
+            transition: transform 0.3s;
+        }
+        
+        .nav-section-title.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        
+        .nav-items {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        .nav-items.collapsed {
+            max-height: 0;
+        }
+        
+        .nav-item {
+            padding: 10px 20px 10px 35px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            color: inherit;
+            font-size: 13px;
+        }
+        
+        .nav-item:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-item.active {
+            background-color: var(--hover-bg);
+            color: var(--primary-color);
+            font-weight: 500;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: var(--table-header);
+            color: var(--white);
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 500;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .page-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .back-button {
+            background-color: var(--table-header);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+        
+        .back-button i {
+            margin-right: 5px;
+        }
+        
+        .back-button:hover {
+            background-color: #00897b;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--table-header);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        /* 表格样式 */
+        .finance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .finance-table th {
+            background-color: var(--table-header);
+            color: white;
+            text-align: center;
+            padding: 12px 15px;
+            font-weight: 500;
+            border: 1px solid #ddd;
+        }
+        
+        .finance-table td {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .finance-table tr:nth-child(even) {
+            background-color: var(--table-alt-row);
+        }
+        
+        .finance-table tr:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .finance-table td.amount {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+            font-weight: 500;
+        }
+        
+        .finance-table td.income {
+            color: var(--income-color);
+            font-weight: bold;
+        }
+        
+        .finance-table td.expense {
+            color: var(--expense-color);
+            font-weight: bold;
+        }
+        
+        .finance-table td.balance {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .finance-table td.transfer-in {
+            color: var(--internal-transfer-in);
+            font-weight: bold;
+        }
+        
+        .finance-table td.transfer-out {
+            color: var(--internal-transfer-out);
+            font-weight: bold;
+        }
+        
+        .finance-table td.negative {
+            color: var(--negative-amount);
+            font-weight: bold;
+        }
+        
+        .total-row {
+            background-color: #e8f5e9 !important;
+            font-weight: bold;
+        }
+        
+        /* 备注区域 */
+        .note-section {
+            margin-top: 30px;
+            padding: 15px;
+            border: 1px dashed #ffcdd2;
+            border-radius: 4px;
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边导航 -->
+        <div class="sidebar" id="sidebar">
+            <!-- 通过sidebar.js脚本动态生成 -->
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <div class="header">
+                <h1>账户统计表</h1>
+                <div class="user-info">
+                    <div class="avatar">A</div>
+                    <span>管理员</span>
+                </div>
+            </div>
+            
+            <div class="page-content">
+                <a href="index.html" class="back-button">
+                    <i class="material-icons">home</i>
+                    返回主页
+                </a>
+                
+                <div class="page-title">账户统计表</div>
+                
+                <table class="finance-table">
+                    <thead>
+                        <tr>
+                            <th>合计</th>
+                            <th>45,000.00</th>
+                            <th>312,923.00</th>
+                            <th>53,290.00</th>
+                            <th>1,250,500.00</th>
+                            <th>1,250,500.00</th>
+                            <th>304,633.00</th>
+                            <th>备注</th>
+                        </tr>
+                        <tr>
+                            <th>序号</th>
+                            <th>账户名称</th>
+                            <th>期初金额</th>
+                            <th>收入金额</th>
+                            <th>支出金额</th>
+                            <th>内部转入</th>
+                            <th>内部转出</th>
+                            <th>账户结余</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>现金</td>
+                            <td class="amount">5,000.00</td>
+                            <td class="amount income">45,500.00</td>
+                            <td class="amount expense">21,000.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount transfer-out">500.00</td>
+                            <td class="amount balance">29,000.00</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>微信</td>
+                            <td class="amount">5,000.00</td>
+                            <td class="amount income">207,423.00</td>
+                            <td class="amount expense">22,490.00</td>
+                            <td class="amount transfer-in">500.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount balance">190,433.00</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>建行</td>
+                            <td class="amount">5,000.00</td>
+                            <td class="amount income">5,000.00</td>
+                            <td class="amount expense">9,800.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount balance">200.00</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>支付宝</td>
+                            <td class="amount">5,000.00</td>
+                            <td class="amount income">55,000.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount balance">60,000.00</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>对公账户</td>
+                            <td class="amount">5,000.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount transfer-in">1,100,000.00</td>
+                            <td class="amount transfer-out">150,000.00</td>
+                            <td class="amount balance">955,000.00</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>私账</td>
+                            <td class="amount">5,000.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount balance">5,000.00</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>工商银行</td>
+                            <td class="amount">5,000.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount balance">5,000.00</td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td>A股东</td>
+                            <td class="amount">5,000.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount transfer-in">50,000.00</td>
+                            <td class="amount transfer-out">100,000.00</td>
+                            <td class="amount negative">-45,000.00</td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td>农行贷款账户</td>
+                            <td class="amount">5,000.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount transfer-in">100,000.00</td>
+                            <td class="amount transfer-out">1,000,000.00</td>
+                            <td class="amount negative">-895,000.00</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">小计</td>
+                            <td class="amount">45,000.00</td>
+                            <td class="amount income">312,923.00</td>
+                            <td class="amount expense">53,290.00</td>
+                            <td class="amount transfer-in">1,250,500.00</td>
+                            <td class="amount transfer-out">1,250,500.00</td>
+                            <td class="amount balance">304,633.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="note-section">
+                    账户统计表用于汇总显示所有账户的收支情况和内部转账情况，负数表示余额为负，需要特别关注。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航组件脚本 -->
+    <script src="js/sidebar.js"></script>
+    <script>
+        // 初始化侧边导航
+        document.addEventListener('DOMContentLoaded', function() {
+            initSidebar();
+        });
+    </script>
+</body>
+</html> 

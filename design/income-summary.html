@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>收入汇总 - 工程项目收支管理系统</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --primary-light: #63a4ff;
+            --primary-dark: #004ba0;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --white: #fff;
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --hover-bg: #e3f2fd;
+            --table-header: #4db6ac;
+            --table-alt-row: #f9f9f9;
+            --income-color: #4CAF50;
+            --expense-color: #F44336;
+            --profit-color: #2196F3;
+            --negative-amount: #e53935;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f7;
+            color: var(--text-color);
+        }
+        
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* 侧边导航 */
+        .sidebar {
+            width: 240px;
+            background-color: var(--white);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            z-index: 100;
+            overflow-y: auto;
+        }
+        
+        .logo {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        
+        .nav-section {
+            margin: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .nav-section-title {
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            background-color: #f9f9f9;
+        }
+        
+        .nav-section-title:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-section-title .toggle-icon {
+            transition: transform 0.3s;
+        }
+        
+        .nav-section-title.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        
+        .nav-items {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        .nav-items.collapsed {
+            max-height: 0;
+        }
+        
+        .nav-item {
+            padding: 10px 20px 10px 35px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            color: inherit;
+            font-size: 13px;
+        }
+        
+        .nav-item:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-item.active {
+            background-color: var(--hover-bg);
+            color: var(--primary-color);
+            font-weight: 500;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: var(--table-header);
+            color: var(--white);
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 500;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .page-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .back-button {
+            background-color: var(--table-header);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+        
+        .back-button i {
+            margin-right: 5px;
+        }
+        
+        .back-button:hover {
+            background-color: #00897b;
+        }
+        
+        /* 年度选择 */
+        .year-selection {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        .year-selection label {
+            font-size: 16px;
+            color: #555;
+        }
+        
+        .year-selection select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        /* 表格样式 */
+        .finance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .finance-table th {
+            background-color: var(--table-header);
+            color: white;
+            text-align: center;
+            padding: 12px 15px;
+            font-weight: 500;
+            border: 1px solid #ddd;
+        }
+        
+        .finance-table td {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .finance-table tr:nth-child(even) {
+            background-color: var(--table-alt-row);
+        }
+        
+        .finance-table tr:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .finance-table td.amount {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+            font-weight: 500;
+        }
+        
+        .finance-table td.income {
+            color: var(--income-color);
+        }
+        
+        .finance-table td.expense {
+            color: var(--expense-color);
+        }
+        
+        .finance-table td.profit {
+            color: var(--profit-color);
+            font-weight: bold;
+        }
+        
+        .finance-table td.negative {
+            color: var(--negative-amount);
+        }
+        
+        .finance-table .total-row {
+            background-color: #e8f5e9;
+            font-weight: bold;
+        }
+        
+        /* 图表区域 */
+        .chart-container {
+            margin-top: 30px;
+            height: 300px;
+            background-color: #f5f5f7;
+            position: relative;
+            padding-top: 20px;
+        }
+        
+        .chart-title {
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        
+        .bar-chart {
+            height: 250px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 0 20px;
+        }
+        
+        .bar {
+            width: 40px;
+            background-color: var(--primary-light);
+            position: relative;
+            margin: 0 10px;
+            transition: height 0.5s;
+        }
+        
+        .bar::before {
+            content: attr(data-value);
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #555;
+        }
+        
+        .bar::after {
+            content: attr(data-month);
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #555;
+        }
+        
+        .y-axis {
+            position: absolute;
+            left: 20px;
+            top: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #777;
+            font-size: 12px;
+        }
+        
+        .y-axis span {
+            position: relative;
+        }
+        
+        .y-axis span::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100vw;
+            height: 1px;
+            background-color: #eee;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边导航 -->
+        <div class="sidebar" id="sidebar">
+            <!-- 通过sidebar.js脚本动态生成 -->
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <div class="header">
+                <h1>收入汇总</h1>
+                <div class="user-info">
+                    <div class="avatar">A</div>
+                    <span>管理员</span>
+                </div>
+            </div>
+            
+            <div class="page-content">
+                <a href="index.html" class="back-button">
+                    <i class="material-icons">home</i>
+                    返回主页
+                </a>
+                
+                <div class="year-selection">
+                    <label>年度：</label>
+                    <select id="year">
+                        <option>2021</option>
+                        <option selected>2022</option>
+                        <option>2023</option>
+                    </select>
+                    <label>年</label>
+                </div>
+                
+                <table class="finance-table">
+                    <thead>
+                        <tr>
+                            <th>年度</th>
+                            <th colspan="12">2022年</th>
+                            <th>全年</th>
+                        </tr>
+                        <tr>
+                            <th>月份</th>
+                            <th>1月</th>
+                            <th>2月</th>
+                            <th>3月</th>
+                            <th>4月</th>
+                            <th>5月</th>
+                            <th>6月</th>
+                            <th>7月</th>
+                            <th>8月</th>
+                            <th>9月</th>
+                            <th>10月</th>
+                            <th>11月</th>
+                            <th>12月</th>
+                            <th>合计</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>收入</td>
+                            <td class="amount income">103,890.00</td>
+                            <td class="amount income">64,211.00</td>
+                            <td class="amount income">50,000.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount income">7,400.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount">-</td>
+                            <td class="amount income">6,000.00</td>
+                            <td class="amount income">81,422.00</td>
+                            <td class="amount income">312,923.00</td>
+                        </tr>
+                        <tr>
+                            <td>支出</td>
+                            <td class="amount expense">14,090.00</td>
+                            <td class="amount expense">2,000.00</td>
+                            <td class="amount expense">7,500.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount expense">3,000.00</td>
+                            <td class="amount expense">900.00</td>
+                            <td class="amount expense">20,000.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount expense">500.00</td>
+                            <td class="amount expense">300.00</td>
+                            <td class="amount expense">4,500.00</td>
+                            <td class="amount expense">500.00</td>
+                            <td class="amount expense">53,290.00</td>
+                        </tr>
+                        <tr>
+                            <td>收支盈亏</td>
+                            <td class="amount profit">89,800.00</td>
+                            <td class="amount profit">62,211.00</td>
+                            <td class="amount profit">42,500.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount profit">4,400.00</td>
+                            <td class="amount negative">-900.00</td>
+                            <td class="amount negative">-20,000.00</td>
+                            <td class="amount">-</td>
+                            <td class="amount negative">-500.00</td>
+                            <td class="amount negative">-300.00</td>
+                            <td class="amount profit">1,500.00</td>
+                            <td class="amount profit">80,922.00</td>
+                            <td class="amount profit">259,633.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="chart-container">
+                    <div class="chart-title">图表标题</div>
+                    <div class="y-axis">
+                        <span>120,000.00</span>
+                        <span>100,000.00</span>
+                        <span>80,000.00</span>
+                        <span>60,000.00</span>
+                        <span>40,000.00</span>
+                        <span>20,000.00</span>
+                        <span>0.00</span>
+                        <span>-20,000.00</span>
+                    </div>
+                    <div class="bar-chart">
+                        <div class="bar" style="height: 85%; background-color: #2196F3;" data-value="103,890.00" data-month="1"></div>
+                        <div class="bar" style="height: 60%; background-color: #2196F3;" data-value="64,211.00" data-month="2"></div>
+                        <div class="bar" style="height: 45%; background-color: #2196F3;" data-value="50,000.00" data-month="3"></div>
+                        <div class="bar" style="height: 0%;" data-value="-" data-month="4"></div>
+                        <div class="bar" style="height: 7%; background-color: #2196F3;" data-value="7,400.00" data-month="5"></div>
+                        <div class="bar" style="height: 0%;" data-value="-" data-month="6"></div>
+                        <div class="bar" style="height: 0%;" data-value="-" data-month="7"></div>
+                        <div class="bar" style="height: 0%;" data-value="-" data-month="8"></div>
+                        <div class="bar" style="height: 0%;" data-value="-" data-month="9"></div>
+                        <div class="bar" style="height: 0%;" data-value="-" data-month="10"></div>
+                        <div class="bar" style="height: 5%; background-color: #2196F3;" data-value="6,000.00" data-month="11"></div>
+                        <div class="bar" style="height: 75%; background-color: #2196F3;" data-value="81,422.00" data-month="12"></div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">收入支出对比图</div>
+                    <div class="y-axis">
+                        <span>120,000.00</span>
+                        <span>100,000.00</span>
+                        <span>80,000.00</span>
+                        <span>60,000.00</span>
+                        <span>40,000.00</span>
+                        <span>20,000.00</span>
+                        <span>0.00</span>
+                    </div>
+                    <div class="bar-chart">
+                        <div style="display: flex; align-items: flex-end;">
+                            <div class="bar" style="height: 85%; background-color: #4CAF50; margin-right: 5px;" data-value="收入" data-month="1"></div>
+                            <div class="bar" style="height: 10%; background-color: #F44336;" data-value="支出" data-month="1"></div>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <div class="bar" style="height: 60%; background-color: #4CAF50; margin-right: 5px;" data-value="收入" data-month="2"></div>
+                            <div class="bar" style="height: 2%; background-color: #F44336;" data-value="支出" data-month="2"></div>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <div class="bar" style="height: 45%; background-color: #4CAF50; margin-right: 5px;" data-value="收入" data-month="3"></div>
+                            <div class="bar" style="height: 7%; background-color: #F44336;" data-value="支出" data-month="3"></div>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <div class="bar" style="height: 0%; margin-right: 5px;" data-value="-" data-month="4"></div>
+                            <div class="bar" style="height: 0%;" data-value="-" data-month="4"></div>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <div class="bar" style="height: 7%; background-color: #4CAF50; margin-right: 5px;" data-value="收入" data-month="5"></div>
+                            <div class="bar" style="height: 3%; background-color: #F44336;" data-value="支出" data-month="5"></div>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <div class="bar" style="height: 0%; margin-right: 5px;" data-value="-" data-month="6"></div>
+                            <div class="bar" style="height: 1%; background-color: #F44336;" data-value="支出" data-month="6"></div>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <div class="bar" style="height: 0%; margin-right: 5px;" data-value="-" data-month="7"></div>
+                            <div class="bar" style="height: 18%; background-color: #F44336;" data-value="支出" data-month="7"></div>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <div class="bar" style="height: 0%; margin-right: 5px;" data-value="-" data-month="8"></div>
+                            <div class="bar" style="height: 0%;" data-value="-" data-month="8"></div>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <div class="bar" style="height: 0%; margin-right: 5px;" data-value="-" data-month="9"></div>
+                            <div class="bar" style="height: 0.5%; background-color: #F44336;" data-value="支出" data-month="9"></div>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <div class="bar" style="height: 0%; margin-right: 5px;" data-value="-" data-month="10"></div>
+                            <div class="bar" style="height: 0.3%; background-color: #F44336;" data-value="支出" data-month="10"></div>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <div class="bar" style="height: 5%; background-color: #4CAF50; margin-right: 5px;" data-value="收入" data-month="11"></div>
+                            <div class="bar" style="height: 4%; background-color: #F44336;" data-value="支出" data-month="11"></div>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <div class="bar" style="height: 75%; background-color: #4CAF50; margin-right: 5px;" data-value="收入" data-month="12"></div>
+                            <div class="bar" style="height: 0.5%; background-color: #F44336;" data-value="支出" data-month="12"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航组件脚本 -->
+    <script src="js/sidebar.js"></script>
+    <script>
+        // 初始化侧边导航
+        document.addEventListener('DOMContentLoaded', function() {
+            initSidebar();
+        });
+    </script>
+</body>
+</html> 

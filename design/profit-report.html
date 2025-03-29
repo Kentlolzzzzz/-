@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>利润表 - 工程项目收支管理系统</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --primary-light: #63a4ff;
+            --primary-dark: #004ba0;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --white: #fff;
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --hover-bg: #e3f2fd;
+            --table-header: #673ab7;
+            --table-alt-row: #f9f9f9;
+            --danger-color: #f44336;
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --chart-color-1: #4CAF50;
+            --chart-color-2: #F44336;
+            --chart-color-3: #673AB7;
+            --chart-color-4: #FF9800;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f7;
+            color: var(--text-color);
+        }
+        
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* 侧边导航 */
+        .sidebar {
+            width: 240px;
+            background-color: var(--white);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            z-index: 100;
+            overflow-y: auto;
+        }
+        
+        .logo {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        
+        .nav-section {
+            margin: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .nav-section-title {
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            background-color: #f9f9f9;
+        }
+        
+        .nav-section-title:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-section-title .toggle-icon {
+            transition: transform 0.3s;
+        }
+        
+        .nav-section-title.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        
+        .nav-items {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        .nav-items.collapsed {
+            max-height: 0;
+        }
+        
+        .nav-item {
+            padding: 10px 20px 10px 35px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            color: inherit;
+            font-size: 13px;
+        }
+        
+        .nav-item:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-item.active {
+            background-color: var(--hover-bg);
+            color: var(--primary-color);
+            font-weight: 500;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: var(--table-header);
+            color: var(--white);
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 500;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .page-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--table-header);
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .date-line {
+            display: flex;
+            justify-content: flex-end;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            height: 300px;
+        }
+        
+        .pie-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .pie-chart {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--chart-color-1) 0% 70%,
+                var(--chart-color-2) 70% 100%
+            );
+            margin: 20px;
+        }
+        
+        .pie-center {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            top: 60px;
+            left: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--table-header);
+        }
+        
+        .pie-legend {
+            display: flex;
+            flex-direction: column;
+            margin: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+        
+        .legend-text {
+            font-size: 14px;
+        }
+        
+        .chart-bar {
+            width: 60px;
+            margin: 0 15px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .bar-group {
+            position: relative;
+            width: 100%;
+            height: 230px;
+            display: flex;
+            align-items: flex-end;
+        }
+        
+        .bar {
+            width: 45%;
+            background-color: var(--chart-color-1);
+            border-radius: 4px 4px 0 0;
+            position: absolute;
+            bottom: 0;
+        }
+        
+        .bar:nth-child(2) {
+            background-color: var(--chart-color-2);
+            left: 55%;
+        }
+        
+        .bar-label {
+            position: absolute;
+            bottom: -30px;
+            text-align: center;
+            font-size: 12px;
+            width: 100%;
+        }
+        
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            text-align: center;
+            font-size: 12px;
+            width: 100%;
+            color: #666;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #555;
+        }
+        
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            border-radius: 2px;
+        }
+        
+        /* 表格样式 */
+        .finance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .finance-table th {
+            background-color: var(--table-header);
+            color: white;
+            text-align: center;
+            padding: 12px 15px;
+            font-weight: 500;
+            border: 1px solid #ddd;
+        }
+        
+        .finance-table td {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .finance-table tr:nth-child(even) {
+            background-color: var(--table-alt-row);
+        }
+        
+        .finance-table tr:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .amount-cell {
+            text-align: right;
+            font-family: monospace;
+            font-weight: 500;
+        }
+        
+        .positive {
+            color: var(--success-color);
+        }
+        
+        .negative {
+            color: var(--danger-color);
+        }
+        
+        .highlight-row {
+            background-color: #ede7f6;
+            font-weight: bold;
+        }
+        
+        .info-box {
+            display: flex;
+            flex-wrap: wrap;
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            flex: 1;
+            min-width: 250px;
+            margin: 5px;
+            display: flex;
+            align-items: center;
+            line-height: 2;
+        }
+        
+        .info-label {
+            color: #666;
+            margin-right: 10px;
+            position: relative;
+        }
+        
+        .info-label::after {
+            content: '>>';
+            margin-left: 8px;
+            color: #aaa;
+        }
+        
+        .info-value {
+            font-weight: 500;
+        }
+        
+        .info-value.highlight {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .info-value.negative {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        
+        .warning-text {
+            color: var(--warning-color);
+            border: 1px dashed var(--warning-color);
+            padding: 10px;
+            margin: 10px 0;
+            display: inline-block;
+            border-radius: 4px;
+        }
+        
+        /* 返回主页按钮 */
+        .back-button {
+            background-color: var(--table-header);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+        
+        .back-button i {
+            margin-right: 5px;
+        }
+        
+        .back-button:hover {
+            background-color: #5e35b1;
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .summary-card {
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .summary-item {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px;
+            background-color: white;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+        
+        .summary-title {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .summary-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .summary-value.positive {
+            color: var(--success-color);
+        }
+        
+        .summary-value.negative {
+            color: var(--danger-color);
+        }
+        
+        .summary-value.neutral {
+            color: var(--table-header);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边导航 -->
+        <div class="sidebar" id="sidebar">
+            <!-- 通过sidebar.js脚本动态生成 -->
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <div class="header">
+                <h1>利润表</h1>
+                <div class="user-info">
+                    <div class="avatar">A</div>
+                    <span>管理员</span>
+                </div>
+            </div>
+            
+            <div class="page-content">
+                <div class="stat-header">
+                    <div class="page-title">利润表</div>
+                    <a href="index.html" class="back-button">
+                        <i class="material-icons">home</i>
+                        返回主页
+                    </a>
+                    <div class="date-line">2025年03月16日 星期日</div>
+                </div>
+                
+                <div class="info-box">
+                    <div class="info-item">
+                        <div class="info-label">查询开始日期</div>
+                        <div class="info-value">2022/01/01</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">查询结束日期</div>
+                        <div class="info-value">2022/12/31</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">查询所属项目</div>
+                        <div class="info-value">哈尔滨工程</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">按照年度查询</div>
+                        <div class="info-value">2022</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="warning-text">
+                            下拉选择工程<br>
+                            若无统计所有项目
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="summary-card">
+                    <div class="summary-item">
+                        <div class="summary-title">总收入</div>
+                        <div class="summary-value positive">158,611.00</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-title">总支出</div>
+                        <div class="summary-value negative">67,990.00</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-title">利润</div>
+                        <div class="summary-value positive">90,621.00</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-title">利润率</div>
+                        <div class="summary-value neutral">57.1%</div>
+                    </div>
+                </div>
+                
+                <div class="chart-title">收入与支出月度对比</div>
+                <div class="chart-container">
+                    <div class="chart-bar">
+                        <div class="bar-group">
+                            <div class="bar" style="height: 60px;"></div>
+                            <div class="bar" style="height: 34px;"></div>
+                        </div>
+                        <div class="bar-label">1月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar-group">
+                            <div class="bar" style="height: 128px;"></div>
+                            <div class="bar" style="height: 26px;"></div>
+                        </div>
+                        <div class="bar-label">2月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar-group">
+                            <div class="bar" style="height: 100px;"></div>
+                            <div class="bar" style="height: 28px;"></div>
+                        </div>
+                        <div class="bar-label">3月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar-group">
+                            <div class="bar" style="height: 0px;"></div>
+                            <div class="bar" style="height: 0px;"></div>
+                        </div>
+                        <div class="bar-label">4月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar-group">
+                            <div class="bar" style="height: 15px;"></div>
+                            <div class="bar" style="height: 0px;"></div>
+                        </div>
+                        <div class="bar-label">5月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar-group">
+                            <div class="bar" style="height: 0px;"></div>
+                            <div class="bar" style="height: 36px;"></div>
+                        </div>
+                        <div class="bar-label">6月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar-group">
+                            <div class="bar" style="height: 0px;"></div>
+                            <div class="bar" style="height: 3px;"></div>
+                        </div>
+                        <div class="bar-label">7月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar-group">
+                            <div class="bar" style="height: 0px;"></div>
+                            <div class="bar" style="height: 0px;"></div>
+                        </div>
+                        <div class="bar-label">8月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar-group">
+                            <div class="bar" style="height: 0px;"></div>
+                            <div class="bar" style="height: 0px;"></div>
+                        </div>
+                        <div class="bar-label">9月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar-group">
+                            <div class="bar" style="height: 0px;"></div>
+                            <div class="bar" style="height: 0px;"></div>
+                        </div>
+                        <div class="bar-label">10月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar-group">
+                            <div class="bar" style="height: 12px;"></div>
+                            <div class="bar" style="height: 4px;"></div>
+                        </div>
+                        <div class="bar-label">11月</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="bar-group">
+                            <div class="bar" style="height: 1px;"></div>
+                            <div class="bar" style="height: 5px;"></div>
+                        </div>
+                        <div class="bar-label">12月</div>
+                    </div>
+                </div>
+                
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: var(--chart-color-1);"></div>
+                        <span>收入</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: var(--chart-color-2);"></div>
+                        <span>支出</span>
+                    </div>
+                </div>
+                
+                <div class="pie-container">
+                    <div>
+                        <div class="chart-title">收益结构</div>
+                        <div style="display: flex; align-items: center;">
+                            <div class="pie-chart">
+                                <div class="pie-center">57.1%</div>
+                            </div>
+                            <div class="pie-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: var(--chart-color-1);"></div>
+                                    <div class="legend-text">利润: 90,621.00 (57.1%)</div>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: var(--chart-color-2);"></div>
+                                    <div class="legend-text">成本: 67,990.00 (42.9%)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <table class="finance-table">
+                    <tr>
+                        <th>月份</th>
+                        <th>收入(元)</th>
+                        <th>支出(元)</th>
+                        <th>利润(元)</th>
+                        <th>利润率</th>
+                    </tr>
+                    <tr>
+                        <td>1月</td>
+                        <td class="amount-cell">30,400.00</td>
+                        <td class="amount-cell negative">17,100.00</td>
+                        <td class="amount-cell positive">13,300.00</td>
+                        <td>43.8%</td>
+                    </tr>
+                    <tr>
+                        <td>2月</td>
+                        <td class="amount-cell">64,211.00</td>
+                        <td class="amount-cell negative">13,000.00</td>
+                        <td class="amount-cell positive">51,211.00</td>
+                        <td>79.8%</td>
+                    </tr>
+                    <tr>
+                        <td>3月</td>
+                        <td class="amount-cell">50,000.00</td>
+                        <td class="amount-cell negative">14,000.00</td>
+                        <td class="amount-cell positive">36,000.00</td>
+                        <td>72.0%</td>
+                    </tr>
+                    <tr>
+                        <td>4月</td>
+                        <td class="amount-cell">0.00</td>
+                        <td class="amount-cell">0.00</td>
+                        <td class="amount-cell">0.00</td>
+                        <td>0.0%</td>
+                    </tr>
+                    <tr>
+                        <td>5月</td>
+                        <td class="amount-cell">7,400.00</td>
+                        <td class="amount-cell">0.00</td>
+                        <td class="amount-cell positive">7,400.00</td>
+                        <td>100.0%</td>
+                    </tr>
+                    <tr>
+                        <td>6月</td>
+                        <td class="amount-cell">0.00</td>
+                        <td class="amount-cell negative">18,000.00</td>
+                        <td class="amount-cell negative">-18,000.00</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>7月</td>
+                        <td class="amount-cell">0.00</td>
+                        <td class="amount-cell negative">1,500.00</td>
+                        <td class="amount-cell negative">-1,500.00</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>8月</td>
+                        <td class="amount-cell">0.00</td>
+                        <td class="amount-cell">0.00</td>
+                        <td class="amount-cell">0.00</td>
+                        <td>0.0%</td>
+                    </tr>
+                    <tr>
+                        <td>9月</td>
+                        <td class="amount-cell">0.00</td>
+                        <td class="amount-cell">0.00</td>
+                        <td class="amount-cell">0.00</td>
+                        <td>0.0%</td>
+                    </tr>
+                    <tr>
+                        <td>10月</td>
+                        <td class="amount-cell">0.00</td>
+                        <td class="amount-cell">0.00</td>
+                        <td class="amount-cell">0.00</td>
+                        <td>0.0%</td>
+                    </tr>
+                    <tr>
+                        <td>11月</td>
+                        <td class="amount-cell">6,000.00</td>
+                        <td class="amount-cell negative">1,890.00</td>
+                        <td class="amount-cell positive">4,110.00</td>
+                        <td>68.5%</td>
+                    </tr>
+                    <tr>
+                        <td>12月</td>
+                        <td class="amount-cell">600.00</td>
+                        <td class="amount-cell negative">2,500.00</td>
+                        <td class="amount-cell negative">-1,900.00</td>
+                        <td>-316.7%</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>合计</td>
+                        <td class="amount-cell">158,611.00</td>
+                        <td class="amount-cell negative">67,990.00</td>
+                        <td class="amount-cell positive">90,621.00</td>
+                        <td>57.1%</td>
+                    </tr>
+                </table>
+                
+                <div class="chart-title" style="margin-top: 40px;">成本类型分析</div>
+                <table class="finance-table">
+                    <tr>
+                        <th>成本类型</th>
+                        <th>金额(元)</th>
+                        <th>占总成本比例</th>
+                        <th>占总收入比例</th>
+                    </tr>
+                    <tr>
+                        <td>材料费</td>
+                        <td class="amount-cell negative">33,000.00</td>
+                        <td>48.5%</td>
+                        <td>20.8%</td>
+                    </tr>
+                    <tr>
+                        <td>施工费</td>
+                        <td class="amount-cell negative">15,000.00</td>
+                        <td>22.1%</td>
+                        <td>9.5%</td>
+                    </tr>
+                    <tr>
+                        <td>工资</td>
+                        <td class="amount-cell negative">13,500.00</td>
+                        <td>19.9%</td>
+                        <td>8.5%</td>
+                    </tr>
+                    <tr>
+                        <td>交通费</td>
+                        <td class="amount-cell negative">4,600.00</td>
+                        <td>6.8%</td>
+                        <td>2.9%</td>
+                    </tr>
+                    <tr>
+                        <td>杂费</td>
+                        <td class="amount-cell negative">1,890.00</td>
+                        <td>2.8%</td>
+                        <td>1.2%</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>合计</td>
+                        <td class="amount-cell negative">67,990.00</td>
+                        <td>100.0%</td>
+                        <td>42.9%</td>
+                    </tr>
+                </table>
+                
+                <div class="chart-title" style="margin-top: 40px;">收入类型分析</div>
+                <table class="finance-table">
+                    <tr>
+                        <th>收入类型</th>
+                        <th>金额(元)</th>
+                        <th>占总收入比例</th>
+                    </tr>
+                    <tr>
+                        <td>工程款</td>
+                        <td class="amount-cell positive">71,100.00</td>
+                        <td>44.8%</td>
+                    </tr>
+                    <tr>
+                        <td>销售收入</td>
+                        <td class="amount-cell positive">71,011.00</td>
+                        <td>44.8%</td>
+                    </tr>
+                    <tr>
+                        <td>回购收款</td>
+                        <td class="amount-cell positive">9,100.00</td>
+                        <td>5.7%</td>
+                    </tr>
+                    <tr>
+                        <td>服务收入</td>
+                        <td class="amount-cell positive">7,000.00</td>
+                        <td>4.4%</td>
+                    </tr>
+                    <tr>
+                        <td>返点</td>
+                        <td class="amount-cell positive">400.00</td>
+                        <td>0.3%</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>合计</td>
+                        <td class="amount-cell positive">158,611.00</td>
+                        <td>100.0%</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航组件脚本 -->
+    <script src="js/sidebar.js"></script>
+    <script>
+        // 初始化侧边导航
+        document.addEventListener('DOMContentLoaded', function() {
+            initSidebar();
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工程项目收支管理系统</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --primary-light: #63a4ff;
+            --primary-dark: #004ba0;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --white: #fff;
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --hover-bg: #e3f2fd;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f7;
+            color: var(--text-color);
+        }
+        
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* 侧边导航 */
+        .sidebar {
+            width: 240px;
+            background-color: var(--white);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            z-index: 100;
+            overflow-y: auto;
+        }
+        
+        .logo {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        
+        .nav-section {
+            margin: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .nav-section-title {
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            background-color: #f9f9f9;
+        }
+        
+        .nav-section-title:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-section-title .toggle-icon {
+            transition: transform 0.3s;
+        }
+        
+        .nav-section-title.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        
+        .nav-items {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        .nav-items.collapsed {
+            max-height: 0;
+        }
+        
+        .nav-item {
+            padding: 10px 20px 10px 35px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            color: inherit;
+            font-size: 13px;
+        }
+        
+        .nav-item:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-item.active {
+            background-color: var(--hover-bg);
+            color: var(--primary-color);
+            font-weight: 500;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 500;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* 功能区域 */
+        .function-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: #555;
+            display: inline-block;
+            background-color: #f7f7f7;
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+        
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 16px 20px;
+            box-shadow: var(--card-shadow);
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 140px;
+            text-align: center;
+            flex: 0 0 calc(16.666% - 16px);
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card.blue { border-top: 3px solid #1976d2; }
+        .card.green { border-top: 3px solid #4caf50; }
+        .card.orange { border-top: 3px solid #ff9800; }
+        .card.teal { border-top: 3px solid #26a69a; }
+        .card.purple { border-top: 3px solid #7e57c2; }
+        
+        .card i {
+            font-size: 28px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .card-title {
+            font-size: 14px;
+            font-weight: normal;
+        }
+        
+        @media (max-width: 1200px) {
+            .card {
+                flex: 0 0 calc(25% - 16px);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+            }
+            
+            .nav-item span, .nav-section-title span, .logo span {
+                display: none;
+            }
+            
+            .logo {
+                padding: 15px 0;
+            }
+            
+            .nav-item {
+                justify-content: center;
+                padding: 12px 0;
+            }
+            
+            .nav-item i {
+                margin-right: 0;
+            }
+            
+            .nav-section-title {
+                justify-content: center;
+            }
+            
+            .card {
+                flex: 0 0 calc(33.333% - 16px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边导航 -->
+        <div id="sidebar" class="sidebar">
+            <!-- 导航内容将通过JS动态加载 -->
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <div class="header">
+                <h1>工程项目收支管理系统 (尊享版)</h1>
+                <div class="user-info">
+                    <div class="avatar">A</div>
+                    <span>管理员</span>
+                </div>
+            </div>
+            
+            <!-- 基础信息 -->
+            <div class="function-section">
+                <div class="section-title">基础信息</div>
+                <div class="card-container">
+                    <a href="basic-info.html" class="card blue">
+                        <i class="material-icons">settings</i>
+                        <div class="card-title">基础设置</div>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 数据录入 -->
+            <div class="function-section">
+                <div class="section-title">数据录入</div>
+                <div class="card-container">
+                    <a href="income-expense-register.html" class="card orange">
+                        <i class="material-icons">book</i>
+                        <div class="card-title">收支登记</div>
+                    </a>
+                    <a href="internal-transfer.html" class="card orange">
+                        <i class="material-icons">swap_horiz</i>
+                        <div class="card-title">内部转账</div>
+                    </a>
+                    <a href="accounts-receivable.html" class="card orange">
+                        <i class="material-icons">arrow_downward</i>
+                        <div class="card-title">应收</div>
+                    </a>
+                    <a href="accounts-payable.html" class="card orange">
+                        <i class="material-icons">arrow_upward</i>
+                        <div class="card-title">应付</div>
+                    </a>
+                    <a href="employee-loan.html" class="card orange">
+                        <i class="material-icons">account_balance_wallet</i>
+                        <div class="card-title">借款</div>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 票据录入 -->
+            <div class="function-section">
+                <div class="section-title">票据录入</div>
+                <div class="card-container">
+                    <a href="purchase-contract.html" class="card teal">
+                        <i class="material-icons">shopping_cart</i>
+                        <div class="card-title">采购合同</div>
+                    </a>
+                    <a href="sales-contract.html" class="card teal">
+                        <i class="material-icons">store</i>
+                        <div class="card-title">销售合同</div>
+                    </a>
+                    <a href="sales-invoice-register.html" class="card teal">
+                        <i class="material-icons">receipt</i>
+                        <div class="card-title">销项发票登记</div>
+                    </a>
+                    <a href="purchase-invoice-register.html" class="card teal">
+                        <i class="material-icons">description</i>
+                        <div class="card-title">进项发票登记</div>
+                    </a>
+                    <a href="staff-salary.html" class="card teal">
+                        <i class="material-icons">monetization_on</i>
+                        <div class="card-title">工资</div>
+                    </a>
+                    <a href="attendance-sheet.html" class="card teal">
+                        <i class="material-icons">event</i>
+                        <div class="card-title">考勤表</div>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 数据汇总 -->
+            <div class="function-section">
+                <div class="section-title">数据汇总</div>
+                <div class="card-container">
+                    <a href="project-detail.html" class="card green">
+                        <i class="material-icons">trending_up</i>
+                        <div class="card-title">工程项目明细</div>
+                    </a>
+                    <a href="period-report.html" class="card green">
+                        <i class="material-icons">trending_down</i>
+                        <div class="card-title">任意时段表</div>
+                    </a>
+                    <a href="account-statistics.html" class="card green">
+                        <i class="material-icons">account_balance</i>
+                        <div class="card-title">账户统计</div>
+                    </a>
+                    <a href="employee-statistics.html" class="card green">
+                        <i class="material-icons">business</i>
+                        <div class="card-title">员工统计</div>
+                    </a>
+                    <a href="project-statistics.html" class="card green">
+                        <i class="material-icons">people</i>
+                        <div class="card-title">项目统计</div>
+                    </a>
+                    <a href="transaction-report.html" class="card green">
+                        <i class="material-icons">compare_arrows</i>
+                        <div class="card-title">往来报表</div>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 数据报表 -->
+            <div class="function-section">
+                <div class="section-title">数据报表</div>
+                <div class="card-container">
+                    <a href="cost-detail.html" class="card purple">
+                        <i class="material-icons">attach_money</i>
+                        <div class="card-title">成本核算明细</div>
+                    </a>
+                    <a href="income-detail.html" class="card blue">
+                        <i class="material-icons">timeline</i>
+                        <div class="card-title">收入核算明细</div>
+                    </a>
+                    <a href="profit-report.html" class="card purple">
+                        <i class="material-icons">assessment</i>
+                        <div class="card-title">利润表</div>
+                    </a>
+                    <a href="statistics.html" class="card green">
+                        <i class="material-icons">bar_chart</i>
+                        <div class="card-title">统计分析</div>
+                    </a>
+                    <a href="chart-report.html" class="card orange">
+                        <i class="material-icons">pie_chart</i>
+                        <div class="card-title">图表报告</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航组件脚本 -->
+    <script src="js/sidebar.js"></script>
+    <script>
+        // 初始化侧边导航
+        document.addEventListener('DOMContentLoaded', function() {
+            // 当前页面路径，用于高亮显示当前页面对应的导航项
+            initSidebar();
+        });
+    </script>
+</body>
+</html> 

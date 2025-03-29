@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>进项发票登记 - 工程项目收支管理系统</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --primary-light: #63a4ff;
+            --primary-dark: #004ba0;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --white: #fff;
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --hover-bg: #e3f2fd;
+            --table-header: #45b7e5;
+            --table-alt-row: #f9f9f9;
+            --danger-color: #f44336;
+            --success-color: #4CAF50;
+            --invoice-color: #42a5f5;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f7;
+            color: var(--text-color);
+        }
+        
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* 侧边导航 */
+        .sidebar {
+            width: 240px;
+            background-color: var(--white);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            z-index: 100;
+            overflow-y: auto;
+        }
+        
+        .logo {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        
+        .nav-section {
+            margin: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .nav-section-title {
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            background-color: #f9f9f9;
+        }
+        
+        .nav-section-title:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-section-title .toggle-icon {
+            transition: transform 0.3s;
+        }
+        
+        .nav-section-title.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        
+        .nav-items {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        .nav-items.collapsed {
+            max-height: 0;
+        }
+        
+        .nav-item {
+            padding: 10px 20px 10px 35px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            color: inherit;
+            font-size: 13px;
+        }
+        
+        .nav-item:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .nav-item.active {
+            background-color: var(--hover-bg);
+            color: var(--primary-color);
+            font-weight: 500;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: var(--invoice-color);
+            color: var(--white);
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 500;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .page-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .page-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--invoice-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .action-button {
+            background-color: var(--invoice-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .action-button i {
+            margin-right: 5px;
+        }
+        
+        .action-button:hover {
+            background-color: #1e88e5;
+        }
+        
+        /* 表格样式 */
+        .finance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .finance-table th {
+            background-color: var(--invoice-color);
+            color: white;
+            text-align: center;
+            padding: 12px 15px;
+            font-weight: 500;
+            border: 1px solid #ddd;
+        }
+        
+        .finance-table td {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .finance-table tr:nth-child(even) {
+            background-color: var(--table-alt-row);
+        }
+        
+        .finance-table tr:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .date-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #e1f5fe;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        
+        /* 返回主页按钮 */
+        .back-button {
+            background-color: var(--invoice-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        
+        .back-button i {
+            margin-right: 5px;
+        }
+        
+        .back-button:hover {
+            background-color: #1e88e5;
+        }
+        
+        .search-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .search-bar input,
+        .search-bar select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .search-bar label {
+            margin-right: 5px;
+            font-size: 14px;
+        }
+        
+        .warning-box {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #0d47a1;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        .form-field {
+            margin-right: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .form-field label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .form-field input,
+        .form-field select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        
+        .status-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+        
+        .status-completed {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status-cancelled {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        .total-row {
+            background-color: #e3f2fd !important;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+            }
+            
+            .nav-item span, .nav-section-title span, .logo span {
+                display: none;
+            }
+            
+            .logo {
+                padding: 15px 0;
+            }
+            
+            .nav-item {
+                justify-content: center;
+                padding: 12px 0;
+            }
+            
+            .nav-item i {
+                margin-right: 0;
+            }
+            
+            .nav-section-title {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边导航 -->
+        <div id="sidebar" class="sidebar">
+            <!-- 导航内容将通过JS动态加载 -->
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <div class="header">
+                <h1>进项发票登记</h1>
+                <div class="user-info">
+                    <div class="avatar">A</div>
+                    <span>管理员</span>
+                </div>
+            </div>
+            
+            <div class="page-content">
+                <div class="date-header">
+                    <div>当前日期：2022/1/1</div>
+                    <a href="index.html" class="back-button">
+                        <i class="material-icons">home</i>
+                        返回主页
+                    </a>
+                </div>
+                
+                <div class="warning-box">
+                    <p>请注意：所有进项发票必须在收到发票后一个工作日内登记入系统，以便及时抵扣进项税额。</p>
+                </div>
+                
+                <div class="search-bar">
+                    <label>供应商：</label>
+                    <select>
+                        <option value="">全部</option>
+                        <option value="宁波顺通">宁波顺通</option>
+                        <option value="供应商03">供应商03</option>
+                        <option value="杭州02">杭州02</option>
+                    </select>
+                    
+                    <label>日期范围：</label>
+                    <input type="date" value="2022-01-01">
+                    <span>至</span>
+                    <input type="date" value="2022-12-31">
+                    
+                    <button class="action-button">
+                        <i class="material-icons">search</i>
+                        查询
+                    </button>
+                </div>
+                
+                <div class="page-title">
+                    <span>进项发票列表</span>
+                    <button class="action-button">
+                        <i class="material-icons">add</i>
+                        新增发票
+                    </button>
+                </div>
+                
+                <table class="finance-table">
+                    <tr>
+                        <th>序号</th>
+                        <th>发票日期</th>
+                        <th>发票编号</th>
+                        <th>供应商名称</th>
+                        <th>关联合同</th>
+                        <th>采购项目</th>
+                        <th>发票金额</th>
+                        <th>税率</th>
+                        <th>税额</th>
+                        <th>不含税金额</th>
+                        <th>发票状态</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>2022/1/10</td>
+                        <td>JF20220110001</td>
+                        <td>宁波顺通</td>
+                        <td>CG-2022-001</td>
+                        <td>建筑材料</td>
+                        <td>20000.00</td>
+                        <td>13%</td>
+                        <td>2600.00</td>
+                        <td>17400.00</td>
+                        <td><span class="status-tag status-completed">已完成</span></td>
+                        <td>首期材料款</td>
+                        <td>
+                            <a href="#" class="action-link">详情</a>
+                            <a href="#" class="action-link">编辑</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>2022/1/15</td>
+                        <td>JF20220115002</td>
+                        <td>供应商03</td>
+                        <td>CG-2022-002</td>
+                        <td>设备租赁</td>
+                        <td>10000.00</td>
+                        <td>9%</td>
+                        <td>900.00</td>
+                        <td>9100.00</td>
+                        <td><span class="status-tag status-completed">已完成</span></td>
+                        <td>设备租赁费</td>
+                        <td>
+                            <a href="#" class="action-link">详情</a>
+                            <a href="#" class="action-link">编辑</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>2022/2/5</td>
+                        <td>JF20220205003</td>
+                        <td>宁波顺通</td>
+                        <td>CG-2022-001</td>
+                        <td>建筑材料</td>
+                        <td>15000.00</td>
+                        <td>13%</td>
+                        <td>1950.00</td>
+                        <td>13050.00</td>
+                        <td><span class="status-tag status-pending">待确认</span></td>
+                        <td>二期材料款</td>
+                        <td>
+                            <a href="#" class="action-link">详情</a>
+                            <a href="#" class="action-link">编辑</a>
+                        </td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="6">合计</td>
+                        <td>45000.00</td>
+                        <td>-</td>
+                        <td>5450.00</td>
+                        <td>39550.00</td>
+                        <td colspan="3"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航组件脚本 -->
+    <script src="js/sidebar.js"></script>
+    <script>
+        // 初始化侧边导航
+        document.addEventListener('DOMContentLoaded', function() {
+            // 当前页面路径，用于高亮显示当前页面对应的导航项
+            initSidebar();
+        });
+    </script>
+</body>
+</html> 
