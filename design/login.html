@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 工程项目收支管理系统</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --primary-light: #63a4ff;
+            --primary-dark: #004ba0;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --white: #fff;
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --hover-bg: #e3f2fd;
+            --error-color: #F44336;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f7;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .login-card {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+        
+        .login-header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .login-header h1 {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .login-header p {
+            font-size: 14px;
+            opacity: 0.85;
+        }
+        
+        .login-icon {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .login-icon i {
+            font-size: 40px;
+            color: var(--white);
+        }
+        
+        .login-body {
+            padding: 30px;
+        }
+        
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .input-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+            outline: none;
+        }
+        
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 38px;
+            font-size: 20px;
+            color: #999;
+        }
+        
+        .login-button {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .login-button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .login-button i {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        
+        .login-footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .login-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            color: var(--error-color);
+            font-size: 13px;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: rgba(244, 67, 54, 0.1);
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .divider span {
+            padding: 0 10px;
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .alt-logins {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .alt-login-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        
+        .alt-login-btn:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .alt-login-btn i {
+            margin-right: 6px;
+            font-size: 18px;
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .remember-me input {
+            margin-right: 8px;
+        }
+        
+        .forgot-password {
+            text-align: right;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        
+        .forgot-password a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+        
+        /* 震动动画 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-icon">
+                    <i class="material-icons">account_balance</i>
+                </div>
+                <h1>工程项目收支管理系统</h1>
+                <p>请登录以继续访问系统</p>
+            </div>
+            <div class="login-body">
+                <div class="alt-logins">
+                    <button class="alt-login-btn" type="button">
+                        <i class="material-icons">business</i>
+                        <span>企业登录</span>
+                    </button>
+                    <button class="alt-login-btn" type="button">
+                        <i class="material-icons">phone_android</i>
+                        <span>手机登录</span>
+                    </button>
+                </div>
+                
+                <div class="divider">
+                    <span>或使用帐号密码登录</span>
+                </div>
+                
+                <form id="login-form">
+                    <div class="input-group">
+                        <label for="username">用户名</label>
+                        <i class="material-icons">person</i>
+                        <input type="text" id="username" placeholder="请输入用户名" value="admin">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="password">密码</label>
+                        <i class="material-icons">lock</i>
+                        <input type="password" id="password" placeholder="请输入密码" value="admin">
+                    </div>
+                    
+                    <div class="remember-me">
+                        <input type="checkbox" id="remember" checked>
+                        <label for="remember">记住我</label>
+                    </div>
+                    
+                    <div class="forgot-password">
+                        <a href="#">忘记密码？</a>
+                    </div>
+                    
+                    <button type="submit" class="login-button">
+                        <i class="material-icons">login</i>
+                        登录
+                    </button>
+                    
+                    <div class="error-message" id="error-message">
+                        用户名或密码错误，请重试。
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="login-footer">
+            <p>还没有账号？<a href="#">立即注册</a></p>
+            <p style="margin-top: 10px;">© 2023 工程项目收支管理系统 版权所有</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('login-form');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const errorMessage = document.getElementById('error-message');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value.trim();
+                
+                if (username === 'admin' && password === 'admin') {
+                    // 登录成功，跳转到首页
+                    window.location.href = 'index.html';
+                } else {
+                    // 显示错误信息
+                    errorMessage.style.display = 'block';
+                    
+                    // 轻微震动效果
+                    form.classList.add('shake');
+                    setTimeout(() => {
+                        form.classList.remove('shake');
+                    }, 500);
+                }
+            });
+            
+            // 当用户开始输入时隐藏错误信息
+            usernameInput.addEventListener('input', function() {
+                errorMessage.style.display = 'none';
+            });
+            
+            passwordInput.addEventListener('input', function() {
+                errorMessage.style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html> 
