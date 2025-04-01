@@ -104,5 +104,15 @@ namespace FinanceManagement.Api.Data
                 .HasForeignKey(l => l.EmployeeId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
+        
+        // 初始化种子数据
+        public void EnsureSeedData()
+        {
+            // 不再使用EnsureCreated，而是通过迁移来创建和更新数据库结构
+            // Database.EnsureCreated();
+            
+            // 只在没有数据时初始化种子数据
+            SeedData.Initialize(this);
+        }
     }
 } 

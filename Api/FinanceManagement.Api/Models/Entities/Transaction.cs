@@ -20,7 +20,7 @@ namespace FinanceManagement.Api.Models.Entities
         public int CreatedById { get; set; }
         public virtual User CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public string AttachmentPath { get; set; }
+        public string? AttachmentPath { get; set; }
         public int? TaxRateId { get; set; }
         public virtual TaxRate TaxRate { get; set; }
     }
